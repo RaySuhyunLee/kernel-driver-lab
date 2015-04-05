@@ -15,6 +15,8 @@ ioctl_set_msg(int file_desc, char *message) {
 		printf("ioctl_set_msg failed:%d\n", ret_val);
 		exit(-1);
 	}
+
+	printf("set_msg %lu\n", IOCTL_SET_MSG);
 }
 
 ioctl_get_msg(int file_desc) {
@@ -35,7 +37,7 @@ ioctl_get_msg(int file_desc) {
 		exit(-1);
 	}
 
-	printf("get_msg message:%s\n", message);
+	printf("get_msg message:%s | %lu\n", message, IOCTL_GET_MSG);
 }
 
 ioctl_get_nth_byte(int file_desc) {
@@ -55,7 +57,8 @@ ioctl_get_nth_byte(int file_desc) {
 
 		putchar(c);
 	} while(c!=0);
-	putchar('\n');
+
+	printf(" | %lu\n", IOCTL_GET_NTH_BYTE);
 }
 
 main() {

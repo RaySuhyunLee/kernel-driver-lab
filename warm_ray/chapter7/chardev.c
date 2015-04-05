@@ -6,6 +6,7 @@
 #include <linux/module.h>	/* Specifically, a module */
 #include <linux/fs.h>
 #include <asm/uaccess.h>	/* for get_user and put_user */
+#include <linux/version.h>	/* to support ioctl which vary in version */
 
 #include "chardev.h"
 #define SUCCESS 0
@@ -95,14 +96,22 @@ static ssize_t device_write(struct file *file,
 	return i;
 }
 
-int device_ioctl(struct inode *inode,
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,35))
+static int device_ioctl(struct inode *inode,
 		struct file *file, unsigned int ioctl_num, unsigned long ioctl_param) {
+#else
+static long device_ioctl(struct file *file,
+		unsigned int ioctl_num, unsigned long ioctl_param) {
+#endif
 	int i;
 	char *temp;
 	char ch;
 
 #ifdef DEBUG
-	printk(KERN_INFO "device ioctl call with %d, %d", ioctl_num, ioctl_param);
+	printk(KERN_INFO "device ioctl call with %u, %lu\n", ioctl_num, ioctl_param);
+	printk(KERN_INFO "IOCTL_SET_MSG: %lu\n", IOCTL_SET_MSG);
+	printk(KERN_INFO "IOCTL_GET_MSG: %lu\n", IOCTL_GET_MSG);
+	printk(KERN_INFO "IOCTL_GET_NTH_BYTE: %lu\n", IOCTL_GET_NTH_BYTE);
 #endif
 
 	switch (ioctl_num) {
@@ -150,7 +159,7 @@ int init_module() {
 		return ret_val;
 	}
 
-	printk(KERN_INFO "%s The major device number is %d.\n",
+	printk(KERN_INFO "%s\n The major device number is %d.\n",
 			"Registeration is a success", MAJOR_NUM);
 	printk(KERN_INFO "If you want to talk to the device driver,\n");
 	printk(KERN_INFO "you'll have to create a device file. \n");
