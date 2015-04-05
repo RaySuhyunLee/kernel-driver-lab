@@ -12,6 +12,8 @@
 #define DEVICE_NAME "char_dev"
 #define BUF_LEN 80
 
+#define DEBUG
+
 static int Device_Open = 0;
 static char Message[BUF_LEN];
 static char *Message_Ptr;
@@ -61,7 +63,7 @@ static ssize_t device_read(struct file *file,
 	while (length && *Message_Ptr) {
 		put_user(*(Message_Ptr++), buffer++);
 		length--;
-		bytes_read;
+		bytes_read++;
 	}
 
 #ifdef DEBUG
@@ -85,7 +87,7 @@ static ssize_t device_write(struct file *file,
 	printk(KERN_INFO "device_write(%p, %s, %d)\n", file, buffer, length);
 #endif
 
-	for (i=0; i<length && i<BUFLEN; i++)
+	for (i=0; i<length && i<BUF_LEN; i++)
 		get_user(Message[i], buffer + i);
 
 	Message_Ptr = Message;
@@ -99,13 +101,17 @@ int device_ioctl(struct inode *inode,
 	char *temp;
 	char ch;
 
+#ifdef DEBUG
+	printk(KERN_INFO "device ioctl call with %d, %d", ioctl_num, ioctl_param);
+#endif
+
 	switch (ioctl_num) {
 		case IOCTL_SET_MSG:
 			temp = (char *)ioctl_param;
 
 			// Find the length of the message
 			get_user(ch, temp++);
-			for (i=0; ch && i<BUFLEN; i++, temp++)
+			for (i=0; ch && i<BUF_LEN; i++, temp++)
 				get_user(ch, temp);
 			device_write(file, (char *) ioctl_param, i, 0);
 			break;
@@ -128,10 +134,10 @@ int device_ioctl(struct inode *inode,
 struct file_operations Fops = {
 	.read = device_read,
 	.write = device_write,
-	.ioctl = device_ioctl,
+	.unlocked_ioctl = device_ioctl,
 	.open = device_open,
 	.release = device_release
-}
+};
 
 int init_module() {
 	int ret_val;
@@ -157,10 +163,10 @@ int init_module() {
 }
 
 void cleanup_module() {
-	int ret;
+	//int ret;
 
-	ret = unregister_chrdev(MAJOR_NUM, DEVICE_NAME);
+	unregister_chrdev(MAJOR_NUM, DEVICE_NAME);
 
-	if(ret<0)
-		printk(KERN_ALERT "Error: unregister_chrdev: %d\n", ret);
+	//if(ret<0)
+	//	printk(KERN_ALERT "Error: unregister_chrdev: %d\n", ret);
 }
