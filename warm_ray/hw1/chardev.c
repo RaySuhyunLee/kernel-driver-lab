@@ -6,6 +6,7 @@
 #include <linux/module.h>	/* Specifically, a module */
 #include <linux/fs.h>
 #include <asm/uaccess.h>	/* for get_user and put_user */
+#include <linux/sched.h>
 #include <linux/version.h>	/* to support ioctl which vary in version */
 
 #include "chardev.h"
@@ -73,9 +74,8 @@ static ssize_t device_read(struct file *file,
 
 	return bytes_read;
 }
-
 /*
- * This function is called when sombody tries to
+ * This function is called when somebody tries to
  * write into our device file.
  * It copies the data from user buffer and stores
  * it in Message.
@@ -104,35 +104,16 @@ static long device_ioctl(struct file *file,
 		unsigned int ioctl_num, unsigned long ioctl_param) {
 #endif
 	int i;
-	char *temp;
-	char ch;
+    struct task_struct *task;
 
 #ifdef DEBUG
 	printk(KERN_INFO "device ioctl call with %u, %lu\n", ioctl_num, ioctl_param);
-	printk(KERN_INFO "IOCTL_SET_MSG: %lu\n", IOCTL_SET_MSG);
-	printk(KERN_INFO "IOCTL_GET_MSG: %lu\n", IOCTL_GET_MSG);
-	printk(KERN_INFO "IOCTL_GET_NTH_BYTE: %lu\n", IOCTL_GET_NTH_BYTE);
 #endif
 
 	switch (ioctl_num) {
-		case IOCTL_SET_MSG:
-			temp = (char *)ioctl_param;
-
-			// Find the length of the message
-			get_user(ch, temp++);
-			for (i=0; ch && i<BUF_LEN; i++, temp++)
-				get_user(ch, temp);
-			device_write(file, (char *) ioctl_param, i, 0);
-			break;
-
-		case IOCTL_GET_MSG:
-			i = device_read(file, (char *)ioctl_param, 99, 0);
-			put_user('\0', (char *)ioctl_param + i);
-			break;
-
-		case IOCTL_GET_NTH_BYTE:
-			return Message[ioctl_param];
-			break;
+        case IOCTL_GET_TASK:
+            task = current;
+            printk("%d\n", task->pid);
 	}
 
 	return SUCCESS;
@@ -143,7 +124,11 @@ static long device_ioctl(struct file *file,
 struct file_operations Fops = {
 	.read = device_read,
 	.write = device_write,
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,35))
+    .ioctl = device_ioctl,
+#else
 	.unlocked_ioctl = device_ioctl,
+#endif
 	.open = device_open,
 	.release = device_release
 };

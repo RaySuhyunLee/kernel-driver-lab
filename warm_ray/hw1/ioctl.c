@@ -4,66 +4,22 @@
 #include <stdlib.h>
 #include <fcntl.h>			/* open, close */
 #include <unistd.h>			/* exit */
-#include <sys/ioctl.h>	/* ioctl */
+#include <sys/ioctl.h>	    /* ioctl */
 
-ioctl_set_msg(int file_desc, char *message) {
+void ioctl_get_task(int file_desc, struct task_info * task) {
 	int ret_val;
 
-	ret_val = ioctl(file_desc, IOCTL_SET_MSG, message);
+    ret_val = ioctl(file_desc, IOCTL_GET_TASK, task);
 
 	if (ret_val<0) {
-		printf("ioctl_set_msg failed:%d\n", ret_val);
+		printf("ioctl_get_tlist failed:%d\n", ret_val);
 		exit(-1);
 	}
-
-	printf("set_msg %lu\n", IOCTL_SET_MSG);
-}
-
-ioctl_get_msg(int file_desc) {
-	int ret_val;
-	char message[100];
-
-	/*
-	 * FIXME: It is dangerous because we don't tell
-	 * the kernel how far it's allowed to write. We
-	 * have to use two ioctls - one to tell the kernel
-	 * the buffer length and this one.
-	 */
-
-	ret_val = ioctl(file_desc, IOCTL_GET_MSG, message);
-
-	if (ret_val<0) {
-		printf("ioctl_get_msg failed:%d\n", ret_val);
-		exit(-1);
-	}
-
-	printf("get_msg message:%s | %lu\n", message, IOCTL_GET_MSG);
-}
-
-ioctl_get_nth_byte(int file_desc) {
-	int i;
-	char c;
-
-	printf("get_nth_byte message:");
-
-	i = 0;
-	do {
-		c = ioctl(file_desc, IOCTL_GET_NTH_BYTE, i++);
-
-		if(c<0) {
-			printf("ioctl_get_nth_byte failed at the %d'th byte:\n", i);
-			exit(-1);
-		}
-
-		putchar(c);
-	} while(c!=0);
-
-	printf(" | %lu\n", IOCTL_GET_NTH_BYTE);
 }
 
 main() {
 	int file_desc, ret_val;
-	char *msg = "Message passed by ioctl\n";
+    struct task_info task;
 
 	file_desc = open(DEVICE_FILE_NAME, 0);
 	if (file_desc < 0) {
@@ -71,9 +27,7 @@ main() {
 		exit(-1);
 	}
 
-	ioctl_get_nth_byte(file_desc);
-	ioctl_get_msg(file_desc);
-	ioctl_set_msg(file_desc, msg);
-
+    ioctl_get_task(file_desc, &task);
 	close(file_desc);
+
 }

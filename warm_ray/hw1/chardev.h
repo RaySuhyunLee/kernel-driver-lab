@@ -2,11 +2,16 @@
 #define CHARDEV_H
 
 #include <linux/ioctl.h>
+
+struct task_info {
+    char* task_name;
+    int pid;
+};
+
 #define MAJOR_NUM 100
-#define IOCTL_SET_MSG _IOR(MAJOR_NUM, 0, char *)
-#define IOCTL_GET_MSG _IOR(MAJOR_NUM, 1, char *)
-#define IOCTL_GET_NTH_BYTE _IOWR(MAJOR_NUM, 2, int)
+#define IOCTL_GET_TASK _IOR(MAJOR_NUM, 1, struct task_info* )
 
 #define DEVICE_FILE_NAME "char_dev"
+
 
 #endif
