@@ -9,7 +9,7 @@ struct task_info {
 };
 
 #define MAJOR_NUM 100
-#define IOCTL_GET_TASK _IOR(MAJOR_NUM, 1, struct task_info* )
+#define IOCTL_GET_TASK_INFO _IOR(MAJOR_NUM, 1, struct task_info* )
 
 #define DEVICE_FILE_NAME "char_dev"
 

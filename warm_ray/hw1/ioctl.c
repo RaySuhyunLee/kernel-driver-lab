@@ -6,10 +6,12 @@
 #include <unistd.h>			/* exit */
 #include <sys/ioctl.h>	    /* ioctl */
 
-void ioctl_get_task(int file_desc, struct task_info * task) {
+void ioctl_get_task(int file_desc, struct task_info * tinfo) {
 	int ret_val;
 
-    ret_val = ioctl(file_desc, IOCTL_GET_TASK, task);
+    ret_val = ioctl(file_desc, IOCTL_GET_TASK_INFO, tinfo);
+
+		printf("pid: %d", tinfo->pid);
 
 	if (ret_val<0) {
 		printf("ioctl_get_tlist failed:%d\n", ret_val);

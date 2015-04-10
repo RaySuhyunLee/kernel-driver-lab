@@ -96,6 +96,10 @@ static ssize_t device_write(struct file *file,
 	return i;
 }
 
+
+/*
+ * Support different versions
+ */
 #if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,35))
 static int device_ioctl(struct inode *inode,
 		struct file *file, unsigned int ioctl_num, unsigned long ioctl_param) {
@@ -103,17 +107,23 @@ static int device_ioctl(struct inode *inode,
 static long device_ioctl(struct file *file,
 		unsigned int ioctl_num, unsigned long ioctl_param) {
 #endif
+
 	int i;
-    struct task_struct *task;
+	struct task_struct *task;
+	struct task_info tinfo;
 
 #ifdef DEBUG
 	printk(KERN_INFO "device ioctl call with %u, %lu\n", ioctl_num, ioctl_param);
 #endif
 
 	switch (ioctl_num) {
-        case IOCTL_GET_TASK:
-            task = current;
-            printk("%d\n", task->pid);
+		case IOCTL_GET_TASK_INFO:
+			task = current;
+			tinfo.pid = task->pid;
+
+			printk("%d\n", task->pid);
+
+			copy_to_user(ioctl_param, (void *)&tinfo, sizeof(struct task_info));
 	}
 
 	return SUCCESS;
