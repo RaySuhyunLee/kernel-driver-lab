@@ -17,8 +17,7 @@
 #define DEBUG
 
 static int Device_Open = 0;
-static char Message[BUF_LEN];
-static char *Message_Ptr;
+static struct task_struct* Task = NULL;
 
 static int device_open(struct inode *inode, struct file *file) {
 #ifdef DEBUG
@@ -30,7 +29,6 @@ static int device_open(struct inode *inode, struct file *file) {
 
 	Device_Open++;
 	
-	Message_Ptr = Message;
 	try_module_get(THIS_MODULE);
 	return SUCCESS;
 }
@@ -52,24 +50,10 @@ static int device_release(struct inode *inode, struct file *file) {
  */
 static ssize_t device_read(struct file *file,
 		char __user *buffer, size_t length, loff_t *offset) {
-
 	int bytes_read = 0;
-		
+
 #ifdef DEBUG
 	printk(KERN_INFO "device_read(%p, %p, %d)\n", file, buffer, length);
-#endif
-
-	if (*Message_Ptr == 0)
-		return 0;
-
-	while (length && *Message_Ptr) {
-		put_user(*(Message_Ptr++), buffer++);
-		length--;
-		bytes_read++;
-	}
-
-#ifdef DEBUG
-	printk(KERN_INFO "Read %d bytes, %d left\n", bytes_read, length);
 #endif
 
 	return bytes_read;
@@ -82,16 +66,11 @@ static ssize_t device_read(struct file *file,
  */
 static ssize_t device_write(struct file *file,
 		const char __user *buffer, size_t length, loff_t *offset) {
-	int i;
+	int i=0;
 
 #ifdef DEBUG
 	printk(KERN_INFO "device_write(%p, %s, %d)\n", file, buffer, length);
 #endif
-
-	for (i=0; i<length && i<BUF_LEN; i++)
-		get_user(Message[i], buffer + i);
-
-	Message_Ptr = Message;
 
 	return i;
 }
@@ -117,20 +96,25 @@ static long device_ioctl(struct file *file,
 #endif
 
 	switch (ioctl_num) {
-		case IOCTL_GET_TASK_INFO:
+		case IOCTL_GET_TASK_COUNT:
 			task = current;
-			tinfo.pid = task->pid;
-			
+			Task = task;
+			i = 0;
 			while(true) {
-				printk("%d: %s\n", task->pid, task->comm);
+				if (task->pid!=0) 
+					i++;
 				task = task->parent;
-				if (task->pid==0) {
-					printk("end:%d\n", task->parent->pid);
-					break;
-				}
 			}
-
+			put_user(i, (int*)ioctl_param);
+			break;
+		case IOCTL_GET_TASK_INFO:
+			tinfo.pid = Task->pid;
+			for(i=0; Task->comm[i]!='\0' && i<TASK_NAME_LENGTH; i++)
+				put_user(Task->comm[i], tinfo.task_name+i);
+			
 			copy_to_user(ioctl_param, (void *)&tinfo, sizeof(struct task_info));
+
+			Task = Task->parent;
 	}
 
 	return SUCCESS;
@@ -169,10 +153,5 @@ int init_module() {
 }
 
 void cleanup_module() {
-	//int ret;
-
 	unregister_chrdev(MAJOR_NUM, DEVICE_NAME);
-
-	//if(ret<0)
-	//	printk(KERN_ALERT "Error: unregister_chrdev: %d\n", ret);
 }
