@@ -120,8 +120,15 @@ static long device_ioctl(struct file *file,
 		case IOCTL_GET_TASK_INFO:
 			task = current;
 			tinfo.pid = task->pid;
-
-			printk("%d\n", task->pid);
+			
+			while(true) {
+				printk("%d: %s\n", task->pid, task->comm);
+				task = task->parent;
+				if (task->pid==0) {
+					printk("end:%d\n", task->parent->pid);
+					break;
+				}
+			}
 
 			copy_to_user(ioctl_param, (void *)&tinfo, sizeof(struct task_info));
 	}
@@ -156,12 +163,7 @@ int init_module() {
 
 	printk(KERN_INFO "%s\n The major device number is %d.\n",
 			"Registeration is a success", MAJOR_NUM);
-	printk(KERN_INFO "If you want to talk to the device driver,\n");
-	printk(KERN_INFO "you'll have to create a device file. \n");
 	printk(KERN_INFO "mknod %s c %d 0\n", DEVICE_FILE_NAME, MAJOR_NUM);
-	printk(KERN_INFO "The device file name is important, because\n");
-	printk(KERN_INFO "the ioctl program assumes that's the\n");
-	printk(KERN_INFO "file you'll use.\n");
 
 	return 0;
 }
