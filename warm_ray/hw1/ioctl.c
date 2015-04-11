@@ -1,0 +1,59 @@
+#include "chardev.h"
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <fcntl.h>			/* open, close */
+#include <unistd.h>			/* exit */
+#include <sys/ioctl.h>	    /* ioctl */
+
+void ioctl_get_task_count(int file_desc, int* count) {
+	int ret_val;
+	ret_val = ioctl(file_desc, IOCTL_GET_TASK_COUNT, count);
+
+	if (ret_val < 0) {
+		printf("ioctl_get_task_count failed: %d\n", ret_val);
+		exit(-1);
+	}
+}
+
+void ioctl_get_task_info(int file_desc, struct task_info * tinfo) {
+	int ret_val;
+
+	ret_val = ioctl(file_desc, IOCTL_GET_TASK_INFO, tinfo);
+
+	if (ret_val<0) {
+		printf("ioctl_get_task_info failed:%d\n", ret_val);
+		exit(-1);
+	}
+}
+
+main() {
+	int file_desc, i, j;
+	int count;
+  struct task_info task;
+	/* a char array that holds task name. The driver copies it's string here, in user space. */ 
+	char task_name[TASK_NAME_LENGTH];
+	struct task_info* task_arr;
+
+	task.task_name = task_name;
+
+	file_desc = open(DEVICE_FILE_NAME, 0);
+	if (file_desc < 0) {
+		printf("Can't open device file: %s\n", DEVICE_FILE_NAME);
+		exit(-1);
+	}
+	
+	ioctl_get_task_count(file_desc, &count);
+	for(i=count-1; i>=0; i--) {
+		task_arr[i].task_name = "                ";
+		ioctl_get_task_info(file_desc, &task_arr[i]);
+	}
+
+	for(i=0; i<count; i++) {
+		for(j=0; j<i; j++)
+			printf(" ");
+		printf("\\- %s(%d)\n", task_arr[i].task_name, task_arr[i].pid);
+	}
+	close(file_desc);
+
+}
