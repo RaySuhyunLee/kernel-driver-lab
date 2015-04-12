@@ -101,9 +101,10 @@ static long device_ioctl(struct file *file,
 			task = Task;
 			i = 0;
 			while(true) {
+				i++;
 				if (task->pid==0)
 					break;
-				i++;
+
 				task = task->parent;
 			}
 			put_user(i, (int*)ioctl_param);
