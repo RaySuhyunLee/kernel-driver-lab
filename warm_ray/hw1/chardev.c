@@ -88,8 +88,8 @@ static long device_ioctl(struct file *file,
 #endif
 
 	int i;
-	struct task_struct *task;
-	struct task_info tinfo;
+	struct task_struct *task;	// for IOCTL_GET_TASK_COUNT
+	struct task_info tinfo;		// for IOCTL_GET_TASK_INFO
 
 #ifdef DEBUG
 	printk(KERN_INFO "device ioctl call with %u, %lu\n", ioctl_num, ioctl_param);
@@ -97,22 +97,28 @@ static long device_ioctl(struct file *file,
 
 	switch (ioctl_num) {
 		case IOCTL_GET_TASK_COUNT:
-			task = current;
-			Task = task;
+			Task = current;
+			task = Task;
 			i = 0;
 			while(true) {
-				if (task->pid!=0) 
-					i++;
+				if (task->pid==0)
+					break;
+				i++;
 				task = task->parent;
 			}
 			put_user(i, (int*)ioctl_param);
 			break;
 		case IOCTL_GET_TASK_INFO:
+			/*
+			 * copy and modify value of task_info struct
+			 */
+			copy_from_user((void*)&tinfo, (void*)ioctl_param, sizeof(struct task_info));
 			tinfo.pid = Task->pid;
 			for(i=0; Task->comm[i]!='\0' && i<TASK_NAME_LENGTH; i++)
 				put_user(Task->comm[i], tinfo.task_name+i);
-			
-			copy_to_user(ioctl_param, (void *)&tinfo, sizeof(struct task_info));
+			put_user('\0', tinfo.task_name+i);
+
+			copy_to_user((void*)ioctl_param, (void *)&tinfo, sizeof(struct task_info));
 
 			Task = Task->parent;
 	}

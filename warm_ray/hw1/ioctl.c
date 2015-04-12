@@ -27,7 +27,19 @@ void ioctl_get_task_info(int file_desc, struct task_info * tinfo) {
 	}
 }
 
-main() {
+void get_all_task(int file_desc, int count) {
+	struct task_info tinfo;
+	char task_name[16];
+	tinfo.task_name = task_name;
+	ioctl_get_task_info(file_desc, &tinfo);
+	if (count > 1)
+		get_all_task(file_desc, count-1);
+	for (; count>1; count--)
+		printf(" ");
+	printf("\\- %s(%d)\n", tinfo.task_name, tinfo.pid);
+}
+
+int main() {
 	int file_desc, i, j;
 	int count;
   struct task_info task;
@@ -44,16 +56,22 @@ main() {
 	}
 	
 	ioctl_get_task_count(file_desc, &count);
-	for(i=count-1; i>=0; i--) {
+	printf("count: %d\n", count);
+
+	get_all_task(file_desc, count);
+/*	for(i=count-1; i>=0; i--) {
 		task_arr[i].task_name = "                ";
 		ioctl_get_task_info(file_desc, &task_arr[i]);
-	}
+	}*/
 
+	/*
 	for(i=0; i<count; i++) {
 		for(j=0; j<i; j++)
 			printf(" ");
 		printf("\\- %s(%d)\n", task_arr[i].task_name, task_arr[i].pid);
-	}
+	}*/
 	close(file_desc);
 
+	return 0;
 }
+
