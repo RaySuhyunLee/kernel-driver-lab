@@ -29,8 +29,6 @@ void ioctl_get_task_info(int file_desc, struct task_info * tinfo) {
 
 void get_all_task(int file_desc, int count) {
 	struct task_info tinfo;
-	char task_name[16];
-	tinfo.task_name = task_name;
 	ioctl_get_task_info(file_desc, &tinfo);
 	if (count > 1)
 		get_all_task(file_desc, count-1);
@@ -42,12 +40,6 @@ void get_all_task(int file_desc, int count) {
 int main() {
 	int file_desc, i, j;
 	int count;
-  struct task_info task;
-	/* a char array that holds task name. The driver copies it's string here, in user space. */ 
-	char task_name[TASK_NAME_LENGTH];
-	struct task_info* task_arr;
-
-	task.task_name = task_name;
 
 	file_desc = open(DEVICE_FILE_NAME, 0);
 	if (file_desc < 0) {
@@ -59,17 +51,7 @@ int main() {
 	printf("count: %d\n", count);
 
 	get_all_task(file_desc, count);
-/*	for(i=count-1; i>=0; i--) {
-		task_arr[i].task_name = "                ";
-		ioctl_get_task_info(file_desc, &task_arr[i]);
-	}*/
 
-	/*
-	for(i=0; i<count; i++) {
-		for(j=0; j<i; j++)
-			printf(" ");
-		printf("\\- %s(%d)\n", task_arr[i].task_name, task_arr[i].pid);
-	}*/
 	close(file_desc);
 
 	return 0;

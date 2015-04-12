@@ -5,7 +5,7 @@
 
 #define TASK_NAME_LENGTH 16
 struct task_info {
-    char* task_name;
+    char task_name[TASK_NAME_LENGTH];
     int pid;
 };
 

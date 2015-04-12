@@ -116,8 +116,8 @@ static long device_ioctl(struct file *file,
 			copy_from_user((void*)&tinfo, (void*)ioctl_param, sizeof(struct task_info));
 			tinfo.pid = Task->pid;
 			for(i=0; Task->comm[i]!='\0' && i<TASK_NAME_LENGTH; i++)
-				put_user(Task->comm[i], tinfo.task_name+i);
-			put_user('\0', tinfo.task_name+i);
+				tinfo.task_name[i] = Task->comm[i];
+			tinfo.task_name[i] = '\0';
 
 			copy_to_user((void*)ioctl_param, (void *)&tinfo, sizeof(struct task_info));
 
