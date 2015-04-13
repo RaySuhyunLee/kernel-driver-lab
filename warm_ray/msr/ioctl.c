@@ -10,7 +10,7 @@
 
 static int loadDriver() {
 	int fd;
-	fd = open(DEV_NAME, O_RDWR);
+	fd = open("/dev/" DEV_NAME, O_RDWR);
 	if (fd == -1) {
 		perror("Failed to open /dev/" DEV_NAME);
 	}

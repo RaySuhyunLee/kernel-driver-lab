@@ -81,7 +81,7 @@ static long msrdrv_ioctl(struct file *f, unsigned int ioctl_num, unsigned long i
 	if (ioctl_num != IOCTL_MSR_CMDS) {
 		return 0;
 	}
-	msrops = (struct MsrInOUt*)ioctl_param;
+	msrops = (struct MsrInOut*)ioctl_param;
 	for (i=0; i<= MSR_VEC_LIMIT; i++, msrops++) {
 		switch (msrops->op) {
 			case MSR_NOP:
@@ -95,7 +95,7 @@ static long msrdrv_ioctl(struct file *f, unsigned int ioctl_num, unsigned long i
 				msrops->value = read_msr(msrops->ecx);
 				break;
 			case MSR_WRITE:
-				dprintk(KERN_INFO "Module " DEV_NAME ": seen MSR_READ command\n")
+				dprintk(KERN_INFO "Module " DEV_NAME ": seen MSR_WRITE command\n")
 				write_msr(msrops->ecx, msrops->eax, msrops->edx);
 				break;
 			case MSR_RDTSC:
