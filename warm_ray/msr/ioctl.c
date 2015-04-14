@@ -96,7 +96,7 @@ static void readPMU(int fd) {
 	};
 	ioctl(fd, IOCTL_MSR_CMDS, (long long)msr_read);
 	
-	printf("----------------------------\n");
+	printf("--------------------------------\n");
 	switch(PMU_EVENT) {
 		case EVENT_USER:
 			printf("target: user space\n");
@@ -113,11 +113,11 @@ static void readPMU(int fd) {
 			printf("resource stalls:    %7lld\n", msr_read[3].value);
 			break;
 	}
-	printf("----------------------------\n");
-	printf("instr retired: %7lld\n", msr_read[4].value);
-	printf("core cycles: %7lld\n", msr_read[5].value);
-	printf("ref cycles: %7lld\n", msr_read[6].value);
-	printf("----------------------------\n");
+	printf("--------------------------------\n");
+	printf("instr retired:      %7lld\n", msr_read[4].value);
+	printf("core cycles:        %7lld\n", msr_read[5].value);
+	printf("ref cycles:         %7lld\n", msr_read[6].value);
+	printf("--------------------------------\n");
 	printf("Time Stamp Counter: %7lld\n\n", msr_read[7].value);
 }
 
