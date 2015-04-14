@@ -30,11 +30,13 @@ void ioctl_get_task_info(int file_desc, struct task_info * tinfo) {
 void get_all_task(int file_desc, int count) {
 	struct task_info tinfo;
 	ioctl_get_task_info(file_desc, &tinfo);
-	if (count > 1)
+	if (count > 1) {
 		get_all_task(file_desc, count-1);
-	for (; count>1; count--)
-		printf(" ");
-	printf("\\- %s(%d)\n", tinfo.task_name, tinfo.pid);
+		for (; count>2; count--)
+			printf("  ");
+		printf("\\- ");
+	}
+	printf("%s(%d)\n", tinfo.task_name, tinfo.pid);
 }
 
 int main() {
@@ -48,7 +50,7 @@ int main() {
 	}
 	
 	ioctl_get_task_count(file_desc, &count);
-	printf("count: %d\n", count);
+	//printf("count: %d\n", count);
 
 	get_all_task(file_desc, count);
 
