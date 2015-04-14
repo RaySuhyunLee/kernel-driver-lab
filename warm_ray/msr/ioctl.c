@@ -54,6 +54,7 @@ int main(void) {
 		{ MSR_READ, 0x309, 0x00 },
 		{ MSR_READ, 0x30a, 0x00 },
 		{ MSR_READ, 0x30b, 0x00 },
+		{ MSR_RDTSC, 0x00, 0x00 },
 		{ MSR_STOP, 0x00, 0x00 }
 	};
 
@@ -61,13 +62,14 @@ int main(void) {
 	ioctl(fd, IOCTL_MSR_CMDS, (long long)msr_start);
 	printf("This is a hex number 0x%x\n", -1);
 	ioctl(fd, IOCTL_MSR_CMDS, (long long)msr_stop);
-	printf("uops retired:			%7lld\n", msr_stop[2].value);
-	printf("uops issued:			%7lld\n", msr_stop[3].value);
-	printf("stalled cycles:		%7lld\n", msr_stop[4].value);
-	printf("resource stalls:	%7lld\n", msr_stop[5].value);
-	printf("instr retired:		%7lld\n", msr_stop[6].value);
-	printf("core cycles:			%7lld\n", msr_stop[7].value);
-	printf("ref cycles:				%7lld\n", msr_stop[8].value);
+	printf("uops retired:       %7lld\n", msr_stop[2].value);
+	printf("uops issued:        %7lld\n", msr_stop[3].value);
+	printf("stalled cycles:     %7lld\n", msr_stop[4].value);
+	printf("resource stalls:    %7lld\n", msr_stop[5].value);
+	printf("instr retired:      %7lld\n", msr_stop[6].value);
+	printf("core cycles:        %7lld\n", msr_stop[7].value);
+	printf("ref cycles:         %7lld\n", msr_stop[8].value);
+	printf("Time Stamp Counter: %7lld\n", msr_stop[9].value);
 	closeDriver(fd);
 	return 0;
 }
